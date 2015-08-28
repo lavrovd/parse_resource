@@ -215,6 +215,7 @@ module ParseResource
 
       #refactor to settings['app_id'] etc
       app_id     = @@settings['app_id']
+      master_key = @@settings['master_key']
       headers = { "X-Parse-Application-Id"=> app_id, "X-Parse-REST-API-Key" => master_key }
       RestClient::Resource.new(self.model_base_uri, :headers => headers )
     end
