@@ -215,8 +215,8 @@ module ParseResource
 
       #refactor to settings['app_id'] etc
       app_id     = @@settings['app_id']
-      master_key = @@settings['master_key']
-      RestClient::Resource.new(self.model_base_uri, app_id, master_key)
+      headers = { "X-Parse-Application-Id"=> app_id, "X-Parse-REST-API-Key" => master_key }
+      RestClient::Resource.new(self.model_base_uri, :headers => headers )
     end
 
     # Batch requests
@@ -231,8 +231,8 @@ module ParseResource
       base_uri = "https://api.parse.com/1/batch"
       app_id     = @@settings['app_id']
       master_key = @@settings['master_key']
-
-      res = RestClient::Resource.new(base_uri, app_id, master_key)
+      headers = { "X-Parse-Application-Id"=> app_id, "X-Parse-REST-API-Key" => master_key }
+      res = RestClient::Resource.new(self.model_base_uri, :headers => headers )
 
       # Batch saves seem to fail if they're too big. We'll slice it up into multiple posts if they are.
       save_objects.each_slice(slice_size) do |objects|
@@ -320,8 +320,9 @@ module ParseResource
       file_instance = File.new(file_instance, 'rb') if file_instance.is_a? String
 
       filename = filename.parameterize
-
-      private_resource = RestClient::Resource.new "#{base_uri}/#{filename}", app_id, master_key
+      headers = { "X-Parse-Application-Id"=> app_id, "X-Parse-REST-API-Key" => master_key }
+      
+      private_resource = RestClient::Resource.new "#{base_uri}/#{filename}", :headers => headers
       private_resource.post(file_instance, options) do |resp, req, res, &block|
         return false if resp.code == 400
         return JSON.parse(resp) rescue {"code" => 0, "error" => "unknown error"}
