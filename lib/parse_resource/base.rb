@@ -610,7 +610,9 @@ module ParseResource
     end
 
     def get_attribute(k)
+      
       attrs = @unsaved_attributes[k.to_s] ? @unsaved_attributes : @attributes
+      
       case attrs[k]
       when Hash
         klass_name = attrs[k]["className"]
@@ -624,6 +626,8 @@ module ParseResource
           result = DateTime.parse(attrs[k]["iso"]).in_time_zone
         when "File"
           result = attrs[k]["url"]
+        when "Bytes"
+          result = attrs[k]['base64']
         when "GeoPoint"
           result = ParseGeoPoint.new(attrs[k])
         when "Relation"
