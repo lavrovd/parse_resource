@@ -1,5 +1,6 @@
 development:
   app_id: <%= ENV["PARSE_RESOURCE_APPLICATION_ID"] %>
+  rest_api_key: <%= ENV["PARSE_RESOURCE_REST_API_KEY"] %>
   master_key: <%= ENV["PARSE_RESOURCE_MASTER_KEY"] %>
 
 test:
@@ -9,4 +10,5 @@ test:
 
 production:
   app_id: <%= ENV["PARSE_RESOURCE_APPLICATION_ID"] %>
+  rest_api_key: <%= ENV["PARSE_RESOURCE_REST_API_KEY"] %>
   master_key: <%= ENV["PARSE_RESOURCE_MASTER_KEY"] %>

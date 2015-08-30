@@ -215,8 +215,8 @@ module ParseResource
 
       #refactor to settings['app_id'] etc
       app_id     = @@settings['app_id']
-      master_key = @@settings['master_key']
-      headers = { "X-Parse-Application-Id"=> app_id, "X-Parse-REST-API-Key" => master_key }
+      rest_api_key = @@settings['rest_api_key']
+      headers = { "X-Parse-Application-Id"=> app_id, "X-Parse-REST-API-Key" => rest_api_key }
       RestClient::Resource.new(self.model_base_uri, :headers => headers )
     end
 
@@ -231,8 +231,8 @@ module ParseResource
 
       base_uri = "https://api.parse.com/1/batch"
       app_id     = @@settings['app_id']
-      master_key = @@settings['master_key']
-      headers = { "X-Parse-Application-Id"=> app_id, "X-Parse-REST-API-Key" => master_key }
+      rest_api_key = @@settings['rest_api_key']
+      headers = { "X-Parse-Application-Id"=> app_id, "X-Parse-REST-API-Key" => rest_api_key }
       res = RestClient::Resource.new(self.model_base_uri, :headers => headers )
 
       # Batch saves seem to fail if they're too big. We'll slice it up into multiple posts if they are.
@@ -296,6 +296,7 @@ module ParseResource
           settings = HashWithIndifferentAccess.new
           settings['app_id'] = ENV["PARSE_RESOURCE_APPLICATION_ID"]
           settings['master_key'] = ENV["PARSE_RESOURCE_MASTER_KEY"]
+          settings['rest_api_key'] = ENV["PARSE_RESOURCE_REST_API_KEY"]
           settings
         else
           raise "Cannot load parse_resource.yml and API keys are not set in environment"
@@ -316,17 +317,37 @@ module ParseResource
       #refactor to settings['app_id'] etc
       app_id     = @@settings['app_id']
       master_key = @@settings['master_key']
+      rest_api_key = @@settings['rest_api_key']
 
       options[:content_type] ||= 'image/jpg' # TODO: Guess mime type here.
       file_instance = File.new(file_instance, 'rb') if file_instance.is_a? String
 
       filename = filename.parameterize
-      headers = { "X-Parse-Application-Id"=> app_id, "X-Parse-REST-API-Key" => master_key }
+      headers = { "X-Parse-Application-Id"=> app_id, "X-Parse-REST-API-Key" => rest_api_key }
       
       private_resource = RestClient::Resource.new "#{base_uri}/#{filename}", :headers => headers
       private_resource.post(file_instance, options) do |resp, req, res, &block|
         return false if resp.code == 400
         return JSON.parse(resp) rescue {"code" => 0, "error" => "unknown error"}
+      end
+      false
+    end
+    
+    # Create a RESTful resource to delete file
+    
+    def self.delete_file(filename)
+      load_settings
+      
+      base_uri = "https://api.parse.com/1/files"
+      app_id     = @@settings['app_id']
+      master_key = @@settings['master_key']
+      
+      headers = { "X-Parse-Application-Id"=> app_id, "X-Parse-Master-Key" => master_key }
+      private_resource = RestClient::Resource.new "#{base_uri}/#{filename}", :headers => headers
+
+      private_resource.delete do |resp, req, res, &block|
+        return false if resp.code != 200
+        return resp.code rescue {"code" => 0, "error" => "unknown error"}
       end
       false
     end
